@@ -1,4 +1,4 @@
-"""68 Certain Teas -- North Indian tabla tal/theka rhythm data: 38 tals, 68 theka variants.
+"""68 Certain Teas -- North Indian tabla tal/theka rhythm data: 43 tals, 68 theka variants.
 
 TERMS
     tal      A rhythmic cycle: a fixed number of beats, grouped into
