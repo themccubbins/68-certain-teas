@@ -9,7 +9,7 @@ TERMS
     tal      A rhythmic cycle: a fixed number of beats (`beats`) with a
              fixed accent pattern.
     theka    A specific sequence of drum strokes that realizes a tal.
-             REALIZED has one entry per theka (68 total, across 38 tals).
+             REALIZED has one entry per theka (68 total, across 43 tals).
     bol      The name of a single drum stroke (Dha, Dhin, Na, Tin, ...).
              One bol fires per beat.
     sam      The first, always-accented beat of a tal's cycle.
