@@ -6,16 +6,28 @@ Theka order is simplest-first (beat count, then bol complexity, then name
 -- see realized_patterns.py) and cycles forward each time the CV input
 goes low. The module boots into THEKAS[0].
 
-CV input (bipolar, ~-5V to +5V) drives two one-shot triggers, each firing
-a fixed TRIGGER_LENGTH_S pulse on the current step's channels regardless
-of how long the input stays past its threshold -- gate-length-follower
-behavior made triggers wider than the source pulse on real hardware, so
-this fires clean and constant-width instead:
+CV input (bipolar, ~-5V to +5V) drives clock and theka-select separately:
 
-    v > RISING_THRESHOLD_V   -> advance one step, pulse its channels
-    v < FALLING_THRESHOLD_V  -> advance to the next theka, reset to step 0, pulse
-    -DEAD_ZONE_V..DEAD_ZONE_V -> re-arm both triggers
-    (anywhere else: undefined, hold steady -- gives hysteresis headroom)
+    v > RISING_THRESHOLD_V
+        Clock. Advances one step and fires a fixed TRIGGER_LENGTH_S pulse
+        on that step's channels, regardless of how long the input stays
+        past the threshold -- a gate-length-follower here made triggers
+        wider than the source pulse on real hardware, so this fires clean
+        and constant-width instead.
+
+    v < FALLING_THRESHOLD_V
+        Theka select. Advances to the next theka (reset to step 0) once
+        per crossing, then shows that theka's index in binary across all
+        8 outputs (channel 1 = bit 0 / LSB, channel 8 = bit 7 / MSB) for
+        as long as the input stays below the threshold -- this one DOES
+        follow gate length, on purpose, so the binary readout is actually
+        held long enough to read off the LEDs.
+
+    -DEAD_ZONE_V..DEAD_ZONE_V
+        Off. Re-arms both triggers.
+
+    Anywhere else (between the dead zone and either threshold): also off,
+    undefined otherwise -- gives hysteresis headroom.
 
 Each gate output's LED is hardwired to it on Uncertainty, so there's no
 separate LED code needed.
@@ -87,7 +99,8 @@ theka_index = 0
 step_index = 0
 armed_rising = True
 armed_falling = True
-pulse_off_at = None  # time.monotonic() deadline for the current trigger, or None if idle
+pulse_off_at = None  # time.monotonic() deadline for the current CLOCK trigger, or None if idle
+theka_index_mask = ALL_OFF  # binary readout of theka_index, shown while v < FALLING_THRESHOLD_V
 
 set_outputs(ALL_OFF)  # start silent; first clock pulse lights up step 0
 
@@ -95,8 +108,9 @@ while True:
     now = time.monotonic()
     volts = raw_to_volts(cv_in.value)
 
-    # end the current trigger once its fixed width has elapsed, independent
-    # of whatever the input is doing at that moment
+    # end the current CLOCK trigger once its fixed width has elapsed,
+    # independent of whatever the input is doing at that moment. (Theka
+    # select, below, isn't timed this way -- it follows the input level.)
     if pulse_off_at is not None and now >= pulse_off_at:
         set_outputs(ALL_OFF)
         pulse_off_at = None
@@ -115,14 +129,17 @@ while True:
             armed_falling = False
             theka_index = (theka_index + 1) % len(THEKAS)
             step_index = 0
-            set_outputs(THEKAS[theka_index]["masks"][0])
-            pulse_off_at = now + TRIGGER_LENGTH_S
+            theka_index_mask = tuple(((theka_index >> i) & 1) == 1 for i in range(8))
         armed_rising = True
+        set_outputs(theka_index_mask)  # held for as long as v stays below threshold
 
     elif -DEAD_ZONE_V <= volts <= DEAD_ZONE_V:
+        set_outputs(ALL_OFF)
         armed_rising = True
         armed_falling = True
 
-    # else: between the dead zone and either trigger threshold -- no
-    # defined behavior, arm state just holds steady (wide hysteresis band
-    # so a slow-moving or noisy signal can't double-trigger)
+    else:
+        # between the dead zone and either trigger threshold -- no defined
+        # behavior, stay off. Arm state holds steady (wide hysteresis band
+        # so a slow-moving or noisy signal can't double-trigger).
+        set_outputs(ALL_OFF)

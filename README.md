@@ -26,7 +26,13 @@ The module boots into the simplest theka (fewest beats, then fewest
 distinct bols). A clock/gate above roughly +4V fires a short fixed-width
 trigger on the current step's outputs and advances to the next step. A
 pulse below roughly -4V advances to the next theka (simplest to most
-complex, wrapping around) and resets to its first step.
+complex, wrapping around), resets to its first step, and -- as long as
+the input stays below that threshold -- displays the new theka's index
+in binary across all 8 outputs (channel 1 = least significant bit,
+channel 8 = most significant), so the LEDs count up as you cycle
+through thekas. Since these are the same 8 gate outputs the drums are
+patched into, the binary countup doubles as a bonus rhythmic pattern in
+its own right.
 
 ## License
 
