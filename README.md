@@ -2,7 +2,7 @@
 
 North Indian tabla theka rhythms, played back as gate/trigger patterns on
 [OAM Uncertainty](https://oamodular.org/products/uncertainty), a 2HP
-Eurorack module built around an RP2040. 68 thekas across 38 tals, each
+Eurorack module built around an RP2040. 68 thekas across 43 tals, each
 mapped onto Uncertainty's 8 gate outputs and stepped by an external clock.
 
 ## What's here
