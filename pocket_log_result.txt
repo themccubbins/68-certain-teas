@@ -1,0 +1,12 @@
+﻿=== Pocket Operations log read: 07/10/2026 19:06:56 ===
+Using port: COM6 (USB Serial Device (COM6))
+--- REPL output (raw) ---
+
+>>> import microcontroller
+>>> bytes(microcontroller.nvm[0:64]).split(b'\x00')[0]
+b'FAIL import RuntimeError free=157200'
+>>> int.from_bytes(microcontroller.nvm[64:68], 'little')
+39
+>>> 
+--- end ---
+Done. Results written to C:\Users\Chris\AppData\Local\Packages\Claude_pzs8sxrjxfjjc\LocalCache\Roaming\Claude\local-agent-mode-sessions\fcec3309-3d28-44da-8fec-1f183c8b3500\bb4c2e26-68c0-4bed-b575-27d09573a455\local_42dc5af7-4a91-4d47-b395-76bf8325ed82\outputs\68-certain-teas-v2\pocket_log_result.txt
